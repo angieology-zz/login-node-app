@@ -57,38 +57,38 @@ app.post('/api/logout', function (req, res) {
     })
 })
 
-//issue identity to participant
-//
-const BusinessNetworkConnection = require('composer-client').BusinessNetworkConnection;
+// //issue identity to participant
+// //
+// const BusinessNetworkConnection = require('composer-client').BusinessNetworkConnection;
 
-async function identityIssue() {
-    let businessNetworkConnection = new BusinessNetworkConnection();
-    try {
-        await businessNetworkConnection.connect('admin@digitalPropertyNetwork');
-        let result = await businessNetworkConnection.issueIdentity('net.biz.digitalPropertyNetwork.Person#mae@biznet.org', 'maeid1')
-        console.log(`userID = ${result.userID}`);
-        console.log(`userSecret = ${result.userSecret}`);
-        await businessNetworkConnection.disconnect();
-    } catch(error) {
-        console.log(error);
-        process.exit(1);
-    }
-}
+// async function identityIssue() {
+//     let businessNetworkConnection = new BusinessNetworkConnection();
+//     try {
+//         await businessNetworkConnection.connect('admin@digitalPropertyNetwork');
+//         let result = await businessNetworkConnection.issueIdentity('net.biz.digitalPropertyNetwork.Person#mae@biznet.org', 'maeid1')
+//         console.log(`userID = ${result.userID}`);
+//         console.log(`userSecret = ${result.userSecret}`);
+//         await businessNetworkConnection.disconnect();
+//     } catch(error) {
+//         console.log(error);
+//         process.exit(1);
+//     }
+// }
 
-identityIssue();
+// identityIssue();
 
-//test connection as a user
-async function testConnection() {
-    let businessNetworkConnection = new BusinessNetworkConnection();
-    try {
-        await businessNetworkConnection.connect('admin@digitalPropertyNetwork');
-        let result = await businessNetworkConnection.ping();
-        console.log(`participant = ${result.participant ? result.participant : '<no participant found>'}`);
-        await businessNetworkConnection.disconnect();
-    } catch((error) {
-        console.error(error);
-        process.exit(1);
-    }
-}
+// //test connection as a user
+// async function testConnection() {
+//     let businessNetworkConnection = new BusinessNetworkConnection();
+//     try {
+//         await businessNetworkConnection.connect('admin@digitalPropertyNetwork');
+//         let result = await businessNetworkConnection.ping();
+//         console.log(`participant = ${result.participant ? result.participant : '<no participant found>'}`);
+//         await businessNetworkConnection.disconnect();
+//     } catch((error) {
+//         console.error(error);
+//         process.exit(1);
+//     }
+// }
 
-testConnection();
+// testConnection();
