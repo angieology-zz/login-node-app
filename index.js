@@ -12,11 +12,11 @@ const express = require('express')
 const app = express()
 const MyNetwork = require('./lib/MyNetwork');
 
-const fileUpload = require('express-fileupload');
+//const fileUpload = require('express-fileupload');
 var cors = require('cors');
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
-app.use(fileUpload());
+//app.use(fileUpload());
 app.use(cors({
     origin: ['<DOMAIN1>', '<DOMAIN2>'],
     credentials: true,
