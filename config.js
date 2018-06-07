@@ -1,5 +1,5 @@
 var config = {};
 
-config.cardName = 'admin@nobul-3';
+config.cardName = 'admin@nobul-5';
 
 module.exports = config;

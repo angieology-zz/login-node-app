@@ -17,6 +17,7 @@ async function asyncConnect() {
     try {
         let businessNetworkDefinition = await businessNetworkConnection.connect(cardName);
         console.log(businessNetworkDefinition)
+        await businessNetworkConnection.disconnect();
     } catch (error) {
         console.log(error);
     }
@@ -27,8 +28,8 @@ async function addUser() {
         let businessNetworkDefinition = await businessNetworkConnection.connect(cardName);
 
         let factory = businessNetworkDefinition.getFactory();
-        customer = factory.newResource('org.nobul.biznet.participant', 'Customer', 'PID:1234286981');
-        console.log("#############");
+        customer = factory.newResource('org.nobul.biznet.participant', 'Customer', 'PID:16981');
+        console.log(customer)
         let participantRegistry = await businessNetworkConnection.getParticipantRegistry('org.nobul.biznet.participant.Customer');
 
         customer.fName = 'Angela';
@@ -45,3 +46,5 @@ async function addUser() {
 
 
 
+
+addUser();
