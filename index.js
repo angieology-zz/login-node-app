@@ -43,7 +43,7 @@ app.use('/api', router);
 app.listen(port);
 console.log('Magic happens on port ' + port);
 
-router.post('/register', async function (req, res){
+router.post('/registerCustomer', async function (req, res){
     try {
         let network = new MyNetwork(cardName);
         let userData = {
@@ -62,7 +62,39 @@ router.post('/register', async function (req, res){
    
 })
 
+router.post('/registerAgent', async function (req, res){
+    try {
+        let network = new MyNetwork(cardName);
+        let userData = {
+            ID : req.body.ID,
+            fName: req.body.fName,
+            lName: req.body.lName,
+            email: req.body.email,
+            license: req.body.license
+        }
+        network.registerCustomer(userData);//should get response succeed or fail
+      
+        res.json({ message: 'agent ' + JSON.stringify(userData) + ' was successfully added'})
+      
+     } catch (err) {
+         res.send(err);
+     }
+   
+})
+
 app.post('/api/login', function (req, res) {
+    //issue identity with sessionKey
+    
+    //idCard?
+
+    //success
+
+    //fail
+
+ /**
+  * sample code:
+  * 
+  */
     // MyNetwork.importCardToNetwork(req.files.card.data).then(function (idCardName) {
     //     if (!idCardName) {
     //         res.status(403).json({ message: "Logging failed" });
@@ -95,34 +127,6 @@ app.post('/api/logout', function (req, res) {
     //     res.status(500).json({ error: error.toString() })
     // })
 })
-
-app.post('/api/registerCustomer', function (req, res) {
-    // var cardName = req.headers.authorization;
-    // var mynetwork = new MyNetwork(cardName);
-    // mynetwork.init().then(function () {
-    //     return mynetwork.register(req.body.user)
-    // }).then(function () {
-    //     res.json({ message: "User added Successfully" });
-    // }).catch(function (error) {
-    //     console.log(error);
-    //     res.status(500).json({ error: error.toString() })
-    // })
-})
-
-app.post('/api/registerAgent', function (req, res) {
-    // var cardName = req.headers.authorization;
-    // var mynetwork = new MyNetwork(cardName);
-    // mynetwork.init().then(function () {
-    //     return mynetwork.register(req.body.user)
-    // }).then(function () {
-    //     res.json({ message: "User added Successfully" });
-    // }).catch(function (error) {
-    //     console.log(error);
-    //     res.status(500).json({ error: error.toString() })
-    // })
-})
-
-
 
 
 
