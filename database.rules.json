@@ -1,0 +1,568 @@
+/*
+copy of nobul backend rules
+*/
+{
+  "rules": {
+    "offers": {
+      ".read": "auth != null",
+      "$jobType": {
+        ".indexOn": ["consumerId", "agentId", "jobId", "status"],
+        "$offerId": {
+          ".write":
+            "auth != null && (data.exists() || !root.child('jobAgents').child(newData.child('jobId').val()).child(newData.child('agentId').val()).exists())",
+          "agentId": {
+            ".validate":
+              "newData.val() === auth.uid && root.child('users').child(auth.uid).child('profile/userType').val() === 'agent'"
+          },
+          "consumerId": {
+            ".validate":
+              "newData.isString() && root.child('users').child(newData.val()).child('profile/userType').val() === 'consumer'"
+          },
+          "jobId": {
+            ".validate":
+              "newData.isString() && root.child('jobs').child($jobType).child(newData.val()).exists()"
+          },
+          "createdAt": {
+            ".validate": "!data.exists() && newData.isNumber()"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "commission": {
+            ".validate":
+              "(newData.isNumber() && newData.val() >= 0) || newData.val() === 'default'"
+          },
+          "buyCommission": {
+            ".validate": "(newData.isNumber() && newData.val() >= 0)"
+          },
+          "cashBack": {
+            ".validate":
+              "(newData.isNumber() && newData.val() >= 0) || (newData.isString() && newData.val() === 'range')"
+          },
+          "status": {
+            ".validate": "newData.isString()"
+          },
+          "promotion": {
+            ".validate": "newData.isString()"
+          },
+          "isAutoBid": {
+            ".validate": "newData.isBoolean()"
+          },
+          "services": {
+            "$serviceId": {
+              ".validate":
+                "newData.isBoolean() && (root.child('services').child($jobType).child($serviceId).exists() || $serviceId === 'default')"
+            }
+          }
+        }
+      }
+    },
+    "jobs": {
+      ".read": "auth != null",
+      "$jobType": {
+        ".indexOn": ["createdBy", "createdAt", "locationToken"],
+        "$jobId": {
+          ".write":
+            "auth != null && (!data.exists() || data.child('createdBy').val() === auth.uid)",
+          "mlsListingId": {
+            ".validate": "true"
+          },
+          "priceRangeLow": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "priceRangeHigh": {
+            ".validate":
+              "(newData.isNumber() && newData.val() > 0) || (newData.isString() && newData.val() === 'unlimited')"
+          },
+          "location": {
+            ".validate": "$jobType === 'buy' && newData.isString()"
+          },
+          "locationToken": {
+            ".validate": "newData.isString()"
+          },
+          "city": {
+            ".validate": "newData.isString()"
+          },
+          "province": {
+            ".validate": "newData.isString()"
+          },
+          "country": {
+            ".validate": "newData.isString()"
+          },
+          "postalCode": {
+            ".validate": "newData.isString()"
+          },
+          "propertyType": {
+            ".validate": "newData.isString()"
+          },
+          "status": {
+            ".validate": "newData.isString()"
+          },
+          "offerCount": {
+            ".validate": "newData.isNumber()"
+          },
+          "promotedOfferCount": {
+            ".validate": "newData.isNumber()"
+          },
+          "createdBy": {
+            ".validate": "!data.exists() && newData.val() === auth.uid"
+          },
+          "createdAt": {
+            ".validate": "!data.exists() && newData.isNumber()"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber()"
+          }
+        }
+      }
+    },
+    "services": {
+      ".read": "auth != null",
+      ".write": "false",
+      "$serviceId": {
+        "name": {
+          ".validate": "newData.isString()"
+        },
+        "points": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "order": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      }
+    },
+    "users": {
+      ".read": "auth != null",
+      "$userId": {
+        ".write":
+          "auth.uid === $userId || root.child('users').child(auth.uid).child('roles').child('viewAdmin').val() === true",
+        "profile": {
+          "userType": {
+            ".validate":
+              "!data.exists() && (newData.val() === 'agent' || newData.val() === 'consumer')"
+          },
+          "license": {
+            ".validate": "newData.isString()"
+          },
+          "name": {
+            ".validate": "newData.isString()"
+          },
+          "email": {
+            ".validate": "newData.isString()"
+          },
+          "phone": {
+            ".validate":
+              "newData.val().matches(/^\\d{10,11}$/) || newData.val().length === 0"
+          },
+          "migrated": {
+            ".validate": "newData.isBoolean()"
+          },
+          "autoBidStatus": {
+            ".validate": "newData.isString()"
+          },
+          "createdAt": {
+            ".validate": "!data.exists() && newData.isNumber()"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber()"
+          }
+        },
+        "remoteNotificationTokens": {
+          "$deviceToken": {
+            ".validate": "newData.isBoolean()"
+          }
+        }
+      }
+    },
+    "agentLocations": {
+      ".read": "auth != null",
+      ".write": "false",
+      "$userId": {
+        "$locationToken": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "agentRatings": {
+      ".read": "auth != null",
+      "$agentRatingsId": {
+        ".indexOn": ["offerId", "agentId"],
+        ".write":
+          "'consumer' === root.child('users').child(auth.uid).child('profile').child('userType').val() &&  auth.uid === root.child('offers').child(newData.child('jobType').val()).child(newData.child('offerId').val()).child('consumerId').val()",
+        "offerId": {
+          ".validate":
+            "'accepted' === root.child('offers').child(newData.parent().child('jobType').val()).child(newData.val()).child('status').val()"
+        },
+        "agentId": {
+          ".validate":
+            "newData.isString() && newData.val() === root.child('offers').child(newData.parent().child('jobType').val()).child(newData.parent().child('offerId').val()).child('agentId').val()"
+        },
+        "jobType": {
+          ".validate":
+            "newData.isString() && newData.val() === 'buy' || newData.val() === 'sell'"
+        },
+        "rating": {
+          "stars": {
+            ".validate": "newData.isNumber()"
+          },
+          "deliverPromised": {
+            ".validate": "newData.isString()"
+          },
+          "reason": {
+            ".validate": "newData.isString()"
+          },
+          "feedback": {
+            ".validate": "newData.isString()"
+          }
+        }
+      }
+    },
+    "jobAgents": {
+      ".read": "auth != null",
+      ".write": "false",
+      "$jobId": {
+        "$agentId": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "contactTimes": {
+      ".indexOn": ["recipientId", "senderId", "subjectId"],
+      ".read": "auth != null",
+      "$contactTimeId": {
+        ".write":
+          "(data.exists() && auth.uid === data.child('senderId').val()) || (!data.exists() && auth.uid === newData.child('senderId').val())",
+        "subject": {
+          ".validate": "newData.isString() && newData.val() === 'job'"
+        },
+        "subjectId": {
+          ".validate": "newData.isString()"
+        },
+        "senderId": {
+          ".validate":
+            "newData.isString() && root.child('users').child(newData.val()).exists()"
+        },
+        "recipientId": {
+          ".validate":
+            "newData.isString() && root.child('users').child(newData.val()).exists()"
+        },
+        "phone": {
+          ".validate":
+            "newData.val().matches(/^\\d{10,11}$/) || newData.val().length === 0"
+        },
+        "times": {
+          "$index": {
+            "date": {
+              ".validate":
+                "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}$/)"
+            },
+            "startTime": {
+              ".validate":
+                "newData.isString() && newData.val().matches(/^\\d{1,2}:\\d{2}$/)"
+            },
+            "endTime": {
+              ".validate":
+                "newData.isString() && newData.val().matches(/^\\d{1,2}:\\d{2}$/)"
+            }
+          }
+        }
+      }
+    },
+    "injectJavaScript": {
+      ".read": "auth != null",
+      ".write": "false",
+      "browse": {
+        ".validate": "newData.isString()"
+      }
+    },
+    "remoteNotificationTokens": {
+      ".read": "false",
+      "$userId": {
+        ".write": "auth.uid === $userId",
+        "$deviceToken": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "jurisdictions": {
+      ".read": "true"
+    },
+    "validatedLicenses": {
+      "$licenseKey": {
+        ".validate": "newData.isBoolean()"
+      }
+    },
+    "consumerMigrations": {
+      ".read": "false",
+      "$migrationId": {
+        ".write": "auth.uid === newData.child('identifiedUserId').val()",
+        "anonymousUserId": {
+          ".validate": "root.child('users').child(newData.val()).exists()"
+        },
+        "identifiedUserId": {
+          ".validate": "root.child('users').child(newData.val()).exists()"
+        }
+      }
+    },
+    "purchases": {
+      ".indexOn": ["createdAt"],
+      "$purchaseId": {
+        ".read": "auth.uid === data.child('createdBy').val()",
+        ".write":
+          "!data.exists() && auth.uid === newData.child('createdBy').val()",
+        "subject": {
+          ".validate": "newData.isString()"
+        },
+        "subjectType": {
+          ".validate": "newData.isString()"
+        },
+        "subjectId": {
+          ".validate": "newData.isString()"
+        },
+        "platform": {
+          ".validate": "newData.isString()"
+        },
+        "receipt": {
+          ".validate": "newData.val() != null"
+        },
+        "createdBy": {
+          ".validate": "newData.isString()"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+    "retsRabbit": {
+      "$region": {
+        "oauth": {
+          ".read": "false",
+          ".write": "false",
+          "accessToken": {
+            ".validate": "newData.isString()"
+          },
+          "tokenType": {
+            ".validate": "newData.isString()"
+          },
+          "expiresIn": {
+            ".validate": "newData.isNumber()"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber()"
+          }
+        }
+      }
+    },
+    "latestPromotedOfferId": {
+      "$jobId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate":
+          "newData.isString() && (root.child('offers').child('buy').child(newData.val()).exists() || root.child('offers').child('sell').child(newData.val()).exists())"
+      }
+    },
+    "representationAgreements": {
+      ".read": "auth != null",
+      "$jobType": {
+        ".indexOn": ["offerId", "agentId"],
+        "$representationAgreementId": {
+          ".write":
+            "(auth.uid === root.child('offers').child($jobType).child(newData.child('offerId').val()).child('agentId').val()) && ('accepted' === root.child('offers').child($jobType).child(newData.child('offerId').val()).child('status').val())",
+          "agentId": {
+            ".validate":
+              "newData.val() === auth.uid && root.child('users').child(auth.uid).child('profile/userType').val() === 'agent'"
+          },
+          "consumerId": {
+            ".validate":
+              "newData.isString() && root.child('users').child(newData.val()).exists()"
+          },
+          "offerId": {
+            ".validate":
+              "'accepted' === root.child('offers').child($jobType).child(newData.val()).child('status').val()"
+          },
+          "brokerage": {
+            ".validate": "newData.isString()"
+          },
+          "mlsNumber": {
+            ".validate": "newData.isString()"
+          },
+          "agentName": {
+            ".validate": "newData.isString()"
+          },
+          "consumerName": {
+            ".validate": "newData.isString()"
+          },
+          "rebateCommissionPercentage": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "listingCommissionPercentage": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "cooperatingCommissionPercentage": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "createdAt": {
+            ".validate": "!data.exists() && newData.isNumber()"
+          },
+          "expiryDate": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        }
+      }
+    },
+    "purchaseAndSaleAgreements": {
+      ".read": "auth != null",
+      "$jobType": {
+        ".indexOn": [
+          "purchaseAndSaleAgreementId",
+          "agentId",
+          "consumerId",
+          "offerId"
+        ],
+        "$purchaseAndSaleAgreementId": {
+          ".write": "(auth.uid === newData.child('agentId').val())",
+          "agentId": {
+            ".validate":
+              "newData.val() === auth.uid && root.child('users').child(auth.uid).child('profile/userType').val() === 'agent'"
+          },
+          "consumerId": {
+            ".validate":
+              "newData.isString() && root.child('users').child(newData.val()).exists()"
+          },
+          "offerId": {
+            ".validate":
+              "'accepted' === root.child('offers').child($jobType).child(newData.val()).child('status').val()"
+          },
+          "brokerage": {
+            ".validate": "newData.isString()"
+          },
+          "mlsNumber": {
+            ".validate": "newData.isString()"
+          },
+          "propertyAddress": {
+            ".validate": "newData.isString()"
+          },
+          "closingDate": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "agentName": {
+            ".validate": "newData.isString()"
+          },
+          "consumerName": {
+            ".validate": "newData.isString()"
+          },
+          "value": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "createdAt": {
+            ".validate": "!data.exists() && newData.isNumber()"
+          }
+        }
+      }
+    },
+    "config": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "autoBids": {
+      ".indexOn": ["agentId"],
+      ".read": "auth != null",
+      "$autoBidId": {
+        ".write":
+          "(data.exists() && auth.uid === data.child('agentId').val()) || (!data.exists() && auth.uid === newData.child('agentId').val())",
+        "agentId": {
+          ".validate":
+            "newData.isString() && root.child('users').child(newData.val()).exists()"
+        },
+        "$jobType": {
+          "buyPropertyType": {
+            ".validate": "newData.isString()"
+          },
+          "sellPropertyType": {
+            ".validate": "newData.isString()"
+          },
+          "buyPriceRangeId": {
+            ".validate": "newData.isString()"
+          },
+          "sellPriceRangeId": {
+            ".validate": "newData.isString()"
+          },
+          "rebatePercentage": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "listingCommissionPercentage": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "cooperatingCommissionPercentage": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        }
+      }
+    },
+    "jobAutoBids": {
+      ".read": "auth != null",
+      "$jobType": {
+        "$agentLocation": {
+          "$agentArea": {
+            "$priceRangeId": {
+              "$propertyType": {
+                ".write": "true",
+                "$autoBidId": {
+                  ".validate": "newData.isBoolean()"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "listingData": {
+      "$region": {
+        ".indexOn": [
+          "localListingId",
+          "dateRemoved",
+          "dateAdded",
+          "dateUpdated"
+        ],
+        "$listingId": {
+          "localListingId": {
+            ".validate": "newData.isString()"
+          },
+          "propertyType": {
+            ".validate": "newData.isString()"
+          },
+          "ownershipType": {
+            ".validate": "newData.isString()"
+          },
+          "latitude": {
+            ".validate": "newData.isString()"
+          },
+          "longitude": {
+            ".validate": "newData.isString()"
+          },
+          "listingPrice": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "bedrooms": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "bathrooms": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "parking": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "dateAdded": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "dateUpdated": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "dateRemoved": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        }
+      }
+    }
+  }
+}
